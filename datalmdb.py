@@ -61,8 +61,4 @@ class DataLmdb(data.Dataset):
                 xint8 = xint8[:, :, ::-1]
 
         xf32 = xint8 * np.float32(self.scale)
-        out = np.zeros((3, 128, 128))
-        out[0] = xf32[0]
-        out[1] = xf32[0]
-        out[2] = xf32[0]
-        return out, y
+        return xf32, y

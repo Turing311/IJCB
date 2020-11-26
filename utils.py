@@ -32,7 +32,7 @@ def get_dataset_list(dataset, type_, mode):
             len11 = 10000
 
         for i in range(len11):  #len(db)):
-            if i % 1000 == 0:
+            if i % 10000 == 0:
                 print('==========', i, len(db))
             face, lab_id = db[i]
             if (lab_id == 1 and type_ == 'real') or (lab_id == 0 and type_ == 'attack'):
@@ -173,9 +173,15 @@ class CustomFaceDataset(Dataset):
 
     def __getitem__(self, index):
         facedata, facelabel, class_label = load_face(self.facelist[index])
+
+        out = np.zeros((3, 128, 128))
+        out[0] = facedata[0]
+        out[1] = facedata[0]
+        out[2] = facedata[0]
+
 #        facedata = facedata.type(torch.FloatTensor)
         # return facedata, self.facelist[index]['filepath']
-        return facedata, facelabel, class_label
+        return out, facelabel, class_label
 
     def __len__(self):
         return len(self.facelist)
