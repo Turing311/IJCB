@@ -27,7 +27,11 @@ def get_dataset_list(dataset, type_, mode):
         else:
             db = DataLmdb("/kaggle/working/Fake/valid", db_size=28332, crop_size=128, flip=False, scale=0.00390625)
 
-        for i in range(len(db)):
+        len = 50000
+        if mode != train:
+            len = 10000
+
+        for i in range(len):  #len(db)):
             if i % 1000 == 0:
                 print('==========', i, len(db))
             face, lab_id = db[i]
