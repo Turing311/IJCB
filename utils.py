@@ -232,8 +232,6 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
         pred = prob.data.max(1)[1]
         total_correct += pred.eq(labels.data.view_as(pred)).sum()
 
-        del prob, data, labels, out
-
         '''
         sc_val = prob[:, 0].detach().cpu().numpy()
         lb_val = lab[:].numpy()
