@@ -27,13 +27,7 @@ def get_dataset_list(dataset, type_, mode):
         else:
             db = DataLmdb("/kaggle/working/Fake/valid", db_size=28332, crop_size=128, flip=False, scale=0.00390625)
 
-        len11 = 40000
-        if mode != 'train':
-            len11 = 10000
-
-        for i in range(len11):  #len(db)):
-            if i % 10000 == 0:
-                print('==========', i, len(db))
+        for i in range(len(db)):
             face, lab_id = db[i]
             if (lab_id == 1 and type_ == 'real') or (lab_id == 0 and type_ == 'attack'):
                 data_list.append({'face': face, 'label_id': lab_id, 'class_id': 0})
