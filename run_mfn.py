@@ -162,7 +162,7 @@ for ep in range(run_parameters['epoch']):
         loss.backward()
 
         spoof_optim.step()
-        if it % 10 == 0:
+        if it % 100 == 0:
             if run_parameters['use_pc']:
                 print("TPC Loss: {0}, Spoof Loss: {1}, Total Loss: {2}".format(tpc_loss.item(), spoof_loss.item(), loss.item()))
             else:
