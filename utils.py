@@ -231,8 +231,8 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
         prob = spoof_classifier(out)
         
         avg_loss += criterion(prob, labels).sum()
-        pred = prob.data.max(1)[1]
-        '''total_correct += pred.eq(labels.data.view_as(pred)).sum()'''
+        '''pred = prob.data.max(1)[1]
+        total_correct += pred.eq(labels.data.view_as(pred)).sum()'''
 
         '''
         sc_val = prob[:, 0].detach().cpu().numpy()
