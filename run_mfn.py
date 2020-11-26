@@ -47,7 +47,7 @@ print("No of training real samples: {0}, attack samples: {1}, num_classes: {2}".
 
 # Load test data
 devel_real_list, test_num_classes = get_dataset_list('easen', 'real', 'devel')
-devel_attack_list, test_num_classes1 = get_dataset_list('easen', 'fake', 'devel')
+devel_attack_list, test_num_classes1 = get_dataset_list('easen', 'attack', 'devel')
 
 if len(devel_real_list) % 2 != 0:
     del devel_real_list[-1]
