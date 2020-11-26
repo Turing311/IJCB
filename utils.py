@@ -256,8 +256,9 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
 
     len_data_test = len(val_loader.dataset)
     avg_loss /= float(len_data_test)
-    print('Test Avg. Loss: %f, Accuracy: (%d / %d)%f' % (avg_loss, total_correct, len_data_test, float(total_correct) / len_data_test))
-    hter = total_correct
+    acc = float(total_correct) / len_data_test) * 100
+    print('Test Avg. Loss: %f, Accuracy: (%d / %d) %f' % (avg_loss, total_correct, len_data_test, acc)
+    hter = 100 - acc
     '''    
     positives = np.array(positives, dtype=np.float)
     negatives = np.array(negatives, dtype=np.float)
