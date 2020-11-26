@@ -8,26 +8,38 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-import bob.measure
 import scipy.io
 import pdb
-import dlib
-from imutils.face_utils import FaceAligner, rect_to_bb
 from parameters import dataset_parameters as data_param
+from datalmdb import DataLmdb
+
 torch.set_printoptions(sci_mode=False, threshold=5000)
 
 vgg_face = vgg_face_class(return_layer='fc6')
 
-detector = dlib.get_frontal_face_detector()
-
 def get_dataset_list(dataset, type_, mode):
+    data_list = []
+    db = None
+    num_classes = 1
+    if dataset == 'easen':
+        if mode == 'train':
+            db = DataLmdb("/kaggle/working/Fake/train", db_size=87690, crop_size=128, flip=False, scale=0.00390625)
+        else:
+            db = DataLmdb("/kaggle/working/Fake/valid", db_size=28332, crop_size=128, flip=False, scale=0.00390625)
+
+        for i in range(len(db)):
+            face, lab_id = db[i]
+            if (lab_id == 1 and type_ == 'real') or (lab_id == 0 and type_ == 'fake'):
+                data_list.append({'face': face, 'label_id': lab_id, 'class_id': 0})
+
+        return data_list, num_classes
+    
     data_dir = data_param[dataset]['path']
     if not os.path.exists(data_dir):
         print(data_dir)
         print("No path")
         exit()
 
-    data_list = []
     num_classes = len(data_param[dataset][mode]['id_list'])
     id_list = data_param[dataset][mode]['id_list']
     id_dic = data_param[dataset][mode]['id_dic']
@@ -123,7 +135,7 @@ def get_dataset_list(dataset, type_, mode):
                             img = plt.imread(filepath)
                             if idx == 0:
                                 gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-                                rects = detector(gray, 2)
+                                rects = [] #detector(gray, 2)
                                 if len(rects) != 0:
                                     (x, y, w, h) = rect_to_bb(rects[0])
                                     face = img[y:y+h, x:x+w]
@@ -152,20 +164,10 @@ class CustomFaceDataset(Dataset):
     def __init__(self, data_list):
         self.facelist = data_list
         #use 0-255 as opposed to 0-1 for this pretrained vggface network
-        normalize = transforms.Normalize(mean=vgg_face.meta['mean'], std=vgg_face.meta['std'])
-
-        trans_list = [transforms.ToPILImage(), transforms.Resize(256), transforms.CenterCrop(size=(224, 224))]
-
-        trans_list += [transforms.ToTensor()]
-        trans_list += [lambda x: x * 255.0]
-
-        trans_list.append(normalize)
-        self.transform = transforms.Compose(trans_list)
 
     def __getitem__(self, index):
         facedata, facelabel, class_label = load_face(self.facelist[index])
-        facedata = self.transform(facedata)
-        facedata = facedata.type(torch.FloatTensor)
+#        facedata = facedata.type(torch.FloatTensor)
         # return facedata, self.facelist[index]['filepath']
         return facedata, facelabel, class_label
 
@@ -200,11 +202,17 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
         i_list.append(tmp_dic)
 
     face_dataset = CustomFaceDataset(i_list)
-    val_loader = DataLoader(face_dataset, batch_size=tmp_bch_sz, num_workers=4)
+    val_loader = DataLoader(face_dataset, batch_size=tmp_bch_sz)
 
     all_scores = np.zeros((len(i_list), 2))
-    for idx, (data, lab, _) in enumerate(val_loader):
-        data = data.cuda()
+
+    avg_loss = 0.0
+    total_correct = 0
+    criterion = torch.nn.CrossEntropyLoss().cuda()
+
+    for idx, (data, labels, _) in enumerate(val_loader):
+        data = data.cuda().float()
+        labels = labels.cuda()
         out = vgg_face(data)
         if apply_inm:
             out = out.view(out.shape[0], 1, out.shape[-1])
@@ -213,6 +221,11 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
 
         prob = spoof_classifier(out)
 
+        avg_loss += criterion(prob, labels).sum()
+        pred = prob.data.max(1)[1]
+        total_correct += pred.eq(labels.data.view_as(pred)).sum()
+
+        '''
         sc_val = prob[:, 0].detach().cpu().numpy()
         lb_val = lab[:].numpy()
 
@@ -222,16 +235,21 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
             upper = all_scores.shape[0]
 
         all_scores[lower:upper, 0] = sc_val
-        all_scores[lower:upper, 1] = lb_val
-
+        all_scores[lower:upper, 1] = lb_val'''
+    '''
     all_values = np.array([p for p, _ in all_scores])
     all_labels = np.array([q for _, q in all_scores])
 
     ind0 = all_labels == 0
     ind1 = all_labels == 1
     positives = all_values[ind0]
-    negatives = all_values[ind1]
+    negatives = all_values[ind1]'''
 
+    len_data_test = len(val_loader.dataset)
+    avg_loss /= float(len_data_test)
+    print('Test Avg. Loss: %f, Accuracy: (%d / %d)%f' % (avg_loss, total_correct, len_data_test, float(total_correct) / len_data_test))
+    hter = total_correct
+    '''    
     positives = np.array(positives, dtype=np.float)
     negatives = np.array(negatives, dtype=np.float)
     positives.sort()
@@ -244,10 +262,10 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
     positives = scores[:positives.shape[0]]
     negatives = scores[positives.shape[0]:]
 
-    T = bob.measure.min_hter_threshold(negatives, positives, is_sorted=True)
-    fpr, fnr = bob.measure.fprfnr(negatives, positives, T)
+#    T = bob.measure.min_hter_threshold(negatives, positives, is_sorted=True)
+    fpr, fnr = 1, 3 #bob.measure.fprfnr(negatives, positives, T)
     hter = (fpr + fnr) / 2.0
-    hter = 100.0 * float(hter)
+    hter = 100.0 * float(hter)'''
 
     return hter
 
