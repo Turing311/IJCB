@@ -36,8 +36,11 @@ torch.set_printoptions(sci_mode=False, threshold=5000)
 # np.random.seed(0)
 
 # Load train data
+print('1-----------------')
 train_real_list, num_classes = get_dataset_list('easen', 'real', 'train')
+print('2-----------------')
 train_attack_list, num_classes1 = get_dataset_list('easen', 'attack', 'train')
+print('3-----------------')
 
 if len(train_real_list) %2 != 0:
     del train_real_list[-1]
