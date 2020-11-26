@@ -125,9 +125,9 @@ def vgg_face_dag(weights_path=None, return_layer='fc8',**kwargs):
 def spoof_model(input_dim=4096, weights_path=None):
 
 	model = nn.Sequential(
-		nn.Linear(in_features=input_dim, out_features=8192, bias=True),
+		nn.Linear(in_features=input_dim, out_features=2048, bias=True),
 		nn.ReLU(inplace=True),
-		nn.Linear(in_features=8192, out_features=1000, bias=True),
+		nn.Linear(in_features=2048, out_features=1000, bias=True),
 		nn.ReLU(inplace=True),
 		nn.Linear(in_features=1000, out_features=500, bias=True),
 		nn.ReLU(inplace=True),

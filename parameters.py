@@ -6,7 +6,7 @@ run_parameters = {
     'train_batch_size': 256,
     'test_batch_size': 256,
     'dimension': 512,
-    'epoch': 30,
+    'epoch': 300,
     'print_epoch': 1,
     'lambda1': 3.0,
     'lambda2': 1.0,
