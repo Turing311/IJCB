@@ -172,6 +172,7 @@ class CustomFaceDataset(Dataset):
         out[0] = facedata[0]
         out[1] = facedata[0]
         out[2] = facedata[0]
+        out = out.astype(np.float32)
 
 #        facedata = facedata.type(torch.FloatTensor)
         # return facedata, self.facelist[index]['filepath']
@@ -218,7 +219,7 @@ def get_val_hter(vgg_face, spoof_classifier, real_data_list, attack_data_list, a
 
     for idx, (data, labels, _) in enumerate(val_loader):
         print('============', idx)
-        data = data.cuda().float()
+        data = data.cuda()
         labels = labels.cuda()
         out = vgg_face(data)
         if apply_inm:
