@@ -17,7 +17,7 @@ run_parameters = {
     'multi_gpu': 1,
     'apply_inm': 0,
     'white_noise': 1,
-    'use_pc': 1
+    'use_pc': 0
 }
 
 dataset_parameters = {
