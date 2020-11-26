@@ -28,7 +28,7 @@ def get_dataset_list(dataset, type_, mode):
             db = DataLmdb("/kaggle/working/Fake/valid", db_size=28332, crop_size=128, flip=False, scale=0.00390625)
 
         len = 50000
-        if mode != train:
+        if mode != 'train':
             len = 10000
 
         for i in range(len):  #len(db)):
